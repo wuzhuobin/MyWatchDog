@@ -2,40 +2,62 @@
   <description>
     simple example build file
   </description>
-  <presetdef name="javac">
-    <javac includeantruntime="false" classpathref="classpath"/>
-  </presetdef>
   <!-- set global properties for this build -->
-  <property name="src.dir" location="src"/>
-  <property name="main-class" value="wuzhuobin.Main"/>
-  <property name="build.dir" location="build"/>
-  <property name="lib.dir" location="${build.dir}/lib"/>
+  <loadproperties srcFile="build.properties"></loadproperties>
+  <property name="src.dir" location="src"></property>
+  <property name="main-class" value="wuzhuobin.Main"></property>
+  <property name="build.dir" location="build"></property>
+  <property name="lib.dir" location="${build.dir}/lib"></property>
   <path id="classpath">
-    <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    <pathelement path="${classpath}"></pathelement>
+    <pathelement location="${opencv.jar}"></pathelement>
   </path>
-  <property name="classes.dir" location="${build.dir}/classes"/>
-  <property name="bin.dir" location="${build.dir}/bin"/>
+  <property name="classes.dir" location="${build.dir}/classes"></property>
+  <property name="bin.dir" location="${build.dir}/bin"></property>
+  <presetdef name="javac">
+    <javac includeantruntime="false"></javac>
+  </presetdef>
   <!-- External -->
 
   <target name="compile" description="compile the source">
     <!-- Compile the Java code from ${src.dir} into ${build.dir} -->
-    <mkdir dir="${build.dir}"/>
-    <mkdir dir="${classes.dir}"/>
-    <mkdir dir="${lib.dir}"/>
-  	<mkdir dir="${bin.dir}"/>
-    <loadproperties srcFile="build.properties"/>
-    <copy file="${opencv.jar}" todir="${lib.dir}"/>
-    <copy file="${opencv.sharedlib}" todir="${bin.dir}"/>
-    <javac srcdir="${src.dir}" destdir="${classes.dir}"/>
+    <mkdir dir="${build.dir}"></mkdir>
+    <mkdir dir="${classes.dir}"></mkdir>
+    <javac srcdir="${src.dir}" destdir="${classes.dir}">
+      <classpath>
+        <pathelement path="${classpath}"></pathelement>
+        <pathelement location="${opencv.jar}"></pathelement>
+      </classpath>
+    </javac>
   </target>
 
   <target name="build" depends="compile" description="generate the distribution">
     <!-- Put everything in ${build.dir} into the MyProject-${DSTAMP}.jar file -->
+    <mkdir dir="${lib.dir}"/>
+  	<mkdir dir="${bin.dir}"/>
+    <copy file="${opencv.jar}" todir="${lib.dir}"></copy>
+    <copy todir="${bin.dir}">
+      <fileset dir="${opencv.sharedlib.dir}"></fileset>
+    </copy>
     <jar destfile="${bin.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
       <manifest>
         <attribute name="Main-Class" value="${main-class}"/>
       </manifest>
     </jar>
+  </target>
+
+  <target name="run" depends="build">
+  	<!-- When using the jar attribute, all classpath settings are ignored according to Oracle's specification.-->
+  	<java fork="true" classname="${main-class}">
+  	  <sysproperty key="java.library.path" path="${bin.dir}"></sysproperty>
+  	  <classpath>
+  	    <pathelement path="${classpath}"></pathelement>
+  	  	<pathelement location="${bin.dir}/${ant.project.name}.jar"></pathelement>
+        <fileset dir="${lib.dir}">
+          <include name="**/*.jar"></include>
+        </fileset>
+  	  </classpath>
+  	</java>
   </target>
 
   <target name="clean" description="clean up">
@@ -44,14 +66,4 @@
 
   <target name="rebuild" depends="clean, build"/>
 
-  <target name="run" depends="build">
-  	<!-- When using the jar attribute, all classpath settings are ignored according to Oracle's specification.-->
-  	<java fork="true" classname="${main-class}">
-  	  <sysproperty key="java.library.path" path="${bin.dir}"/>
-  	  <classpath>
-  	    <path refid="classpath"></path>
-  	  	<path location="${bin.dir}/${ant.project.name}.jar"></path>
-  	  </classpath>
-  	</java>
-  </target>
 </project>

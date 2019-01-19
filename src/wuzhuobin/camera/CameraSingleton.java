@@ -1,21 +1,74 @@
 package wuzhuobin.camera;
 
-import org.opencv.videoio.VideoCapture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-public class CameraSingleton{
-	public static VideoCapture getInstance() {
-		if(CameraSingleton.videoCapture == null) {
-			CameraSingleton.videoCapture = new VideoCapture(0);
+import org.opencv.core.Mat;
+import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.VideoWriter;
+
+public class CameraSingleton {
+	
+	public static CameraSingleton getInstance() {
+		if(cameraSingleton == null) {
+			cameraSingleton = new CameraSingleton();
 		}
-		if(!CameraSingleton.videoCapture.isOpened()) {
-			CameraSingleton.videoCapture = null;
-		}
-		return CameraSingleton.videoCapture;
+		return cameraSingleton;
 	}
-	public static void release() {
-		if(CameraSingleton.videoCapture != null) {
-			CameraSingleton.videoCapture.release();
+
+	private CameraSingleton() {	
+		this.videoCapture = new VideoCapture();
+		this.videoWriter = new VideoWriter();
+		this.fps = 10;
+	}
+	
+	public void start(String filename) {
+		if(this.executorService == null) {
+			Mat firstFrame = new Mat();
+			this.videoCapture.open(0);
+			if (!this.videoCapture.isOpened()) {
+				System.err.println("Camera cannot open.");
+				return;
+			}
+			this.videoCapture.read(firstFrame);
+			this.videoWriter.open(filename, VideoWriter.fourcc('M', 'J', 'P', 'G'), this.fps, firstFrame.size());
+			this.executorService = Executors.newSingleThreadScheduledExecutor();
+			this.executorService.scheduleAtFixedRate(()-> {
+					// TODO Auto-generated method stub
+					Mat oneFrame = new Mat();
+					this.videoCapture.read(oneFrame);
+					videoWriter.write(oneFrame);
+//					System.out.println("Recording!");
+			}, 0, 1000 / this.fps, TimeUnit.MILLISECONDS);
 		}
 	}
-	private static VideoCapture videoCapture = null;
+	
+	public void stop() {
+		if(this.executorService != null && !this.executorService.isShutdown()) {
+			this.executorService.shutdown();
+			try {
+				this.executorService.awaitTermination(1000 / this.fps, TimeUnit.MILLISECONDS);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if(this.videoCapture.isOpened()) {
+			this.videoCapture.release();
+			this.videoWriter.release();
+		}
+	}
+	
+	public void setFps(int fps) {
+		fps = Math.min(fps, 1);
+		fps = Math.max(fps, 20);
+		this.fps = fps;
+	}
+	
+	private static CameraSingleton cameraSingleton = null;
+	private VideoCapture videoCapture;
+	private VideoWriter videoWriter;
+	private ScheduledExecutorService executorService = null; 
+	private int fps;
 };
