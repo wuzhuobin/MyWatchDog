@@ -1,9 +1,10 @@
 package wuzhuobin;
 
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.opencv.core.Core;
 
@@ -15,60 +16,40 @@ public class Main {
 	}
 
 	static public void main(String[] args) throws InterruptedException {
-	
-		CameraSingleton camera = CameraSingleton.getInstance();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("MMMddyyyyHHmmss");
-		camera.start("record_" + dateFormat.format(new Date()) + ".avi");
+
+		Timer timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMMyyyydd_hhmmss");
+			String fileName = "record" + simpleDateFormat.format(new Date()) + ".avi";
+			CameraSingleton cameraSingleton = CameraSingleton.getInstance();
+			if(cameraSingleton.isRecording()) {
+				cameraSingleton.stop();
+			}
+			cameraSingleton.start(fileName);
+			}
+		}, 0, 5000);
+		
 		Scanner scanner = new Scanner(System.in);
 		System.out.println("waiting input.");
-		while(scanner.hasNext()) {
-			System.out.println("waiting input.");
+		while (scanner.hasNext()) {
 			String input = scanner.next();
-			if(input.charAt(0) == 'q' && input.length() == 1) {
+			if (input.charAt(0) == 'q' && input.length() == 1) {
+				CameraSingleton cameraSingleton = CameraSingleton.getInstance();
+				timer.cancel();
+				timer.purge();
+				if (cameraSingleton.isRecording()) {
+					cameraSingleton.stop();
+				}
 				scanner.close();
-				camera.stop();
 				break;
 			}
 			System.out.println("input 'q' to exit. ");
+			System.out.println("waiting input.");
 		}
-		
-//		VideoCapture videoCapture = new VideoCapture(0);
-//		Mat oneFrame = new Mat();
-//		videoCapture.read(oneFrame);	
-//		VideoWriter videoWriter = new VideoWriter("output.avi", VideoWriter.fourcc('M', 'J', 'P', 'G'), 5,
-//				oneFrame.size());
-//
-//		final int NUM = 10;
-//		class Counter{
-//			public int data = 0;
-//		};
-//		final Counter counter = new Counter();
-//		ScheduledExecutorService scheduledExecutorService = 
-//			Executors.newSingleThreadScheduledExecutor();
-//		Runnable capture = new Runnable() {
-//			
-//			@Override
-//			public void run() {
-//				// TODO Auto-generated method stub
-//				videoWriter.write(oneFrame);
-//				videoCapture.read(oneFrame);
-//				System.err.println("counter:" + counter.data);
-//				if(++counter.data > NUM) {
-//					scheduledExecutorService.shutdown();
-//					try {
-//						scheduledExecutorService.awaitTermination(100, TimeUnit.MILLISECONDS);
-//					} catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//				}
-//			}
-//		};
-//		
-//		scheduledExecutorService.scheduleAtFixedRate(capture, 0, 50, TimeUnit.MILLISECONDS);
-//		System.err.println("hello");
-//		for(;!(counter.data > NUM);) {}
-//		videoWriter.release();
-//		videoCapture.release();
+
 	}
 };

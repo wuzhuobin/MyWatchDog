@@ -20,31 +20,32 @@ public class CameraSingleton {
 	private CameraSingleton() {	
 		this.videoCapture = new VideoCapture();
 		this.videoWriter = new VideoWriter();
+		this.executorService = null;
 		this.fps = 10;
 	}
 	
 	public void start(String filename) {
-		if(this.executorService == null) {
-			Mat firstFrame = new Mat();
-			this.videoCapture.open(0);
-			if (!this.videoCapture.isOpened()) {
-				System.err.println("Camera cannot open.");
-				return;
-			}
-			this.videoCapture.read(firstFrame);
-			this.videoWriter.open(filename, VideoWriter.fourcc('M', 'J', 'P', 'G'), this.fps, firstFrame.size());
-			this.executorService = Executors.newSingleThreadScheduledExecutor();
-			this.executorService.scheduleAtFixedRate(()-> {
-					// TODO Auto-generated method stub
-					Mat oneFrame = new Mat();
-					this.videoCapture.read(oneFrame);
-					videoWriter.write(oneFrame);
-//					System.out.println("Recording!");
-			}, 0, 1000 / this.fps, TimeUnit.MILLISECONDS);
+		System.out.println("Camera start!");
+		Mat firstFrame = new Mat();
+		this.videoCapture.open(0);
+		if (!this.videoCapture.isOpened()) {
+			System.err.println("Camera cannot open.");
+			return;
 		}
+		this.videoCapture.read(firstFrame);
+		this.videoWriter.open(filename, VideoWriter.fourcc('M', 'J', 'P', 'G'), this.fps, firstFrame.size());
+		this.executorService = Executors.newSingleThreadScheduledExecutor();
+		this.executorService.scheduleAtFixedRate(() -> {
+			// TODO Auto-generated method stub
+			Mat oneFrame = new Mat();
+			this.videoCapture.read(oneFrame);
+			videoWriter.write(oneFrame);
+			// System.out.println("Recording!");
+		}, 0, 1000 / this.fps, TimeUnit.MILLISECONDS);
 	}
 	
 	public void stop() {
+		System.out.println("Camera Stop!");
 		if(this.executorService != null && !this.executorService.isShutdown()) {
 			this.executorService.shutdown();
 			try {
@@ -58,6 +59,10 @@ public class CameraSingleton {
 			this.videoCapture.release();
 			this.videoWriter.release();
 		}
+	}
+	
+	public boolean isRecording() {
+		return this.videoCapture.isOpened();
 	}
 	
 	public void setFps(int fps) {
