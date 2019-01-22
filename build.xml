@@ -8,10 +8,6 @@
   <property name="main-class" value="wuzhuobin.Main"></property>
   <property name="build.dir" location="build"></property>
   <property name="lib.dir" location="${build.dir}/lib"></property>
-  <path id="classpath">
-    <pathelement path="${classpath}"></pathelement>
-    <pathelement location="${opencv.jar}"></pathelement>
-  </path>
   <property name="classes.dir" location="${build.dir}/classes"></property>
   <property name="bin.dir" location="${build.dir}/bin"></property>
   <presetdef name="javac">
@@ -25,7 +21,6 @@
     <mkdir dir="${classes.dir}"></mkdir>
     <javac srcdir="${src.dir}" destdir="${classes.dir}">
       <classpath>
-        <pathelement path="${classpath}"></pathelement>
         <pathelement location="${opencv.jar}"></pathelement>
       </classpath>
     </javac>
@@ -48,7 +43,6 @@
   	<java fork="true" classname="${main-class}">
   	  <sysproperty key="java.library.path" path="${bin.dir}"></sysproperty>
   	  <classpath>
-  	    <pathelement path="${classpath}"></pathelement>
   	  	<pathelement location="${bin.dir}/${ant.project.name}.jar"></pathelement>
         <fileset dir="${lib.dir}">
           <include name="**/*.jar"></include>
