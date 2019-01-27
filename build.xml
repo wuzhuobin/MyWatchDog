@@ -1,36 +1,37 @@
 <project name="OpenCvJavaSample" default="build" basedir=".">
   <description>
-    simple example build file
+    Easy Ant.
   </description>
-  <!-- set global properties for this build -->
+  <!-- Predefine javac -->
+  <presetdef name="javac">
+    <javac includeantruntime="false"></javac>
+  </presetdef>
+  <!-- Predefine properties -->
   <loadproperties srcFile="build.properties"></loadproperties>
-  <property name="src.dir" location="src"></property>
   <property name="main-class" value="wuzhuobin.Main"></property>
+  <property name="test-class" value="test.wuzhuobin.TestMain"></property>
+  <property name="src.dir" location="src"></property>
   <property name="build.dir" location="build"></property>
   <property name="lib.dir" location="${build.dir}/lib"></property>
   <property name="classes.dir" location="${build.dir}/classes"></property>
   <property name="bin.dir" location="${build.dir}/bin"></property>
-  <presetdef name="javac">
-    <javac includeantruntime="false"></javac>
-  </presetdef>
-  <!-- External -->
 
-  <target name="compile" description="compile the source">
-    <!-- Compile the Java code from ${src.dir} into ${build.dir} -->
+  <target name="compile">
     <mkdir dir="${build.dir}"></mkdir>
     <mkdir dir="${classes.dir}"></mkdir>
-    <javac srcdir="${src.dir}" destdir="${classes.dir}">
+    <javac srcdir="${src.dir}" destdir="${classes.dir}" excludes="test/**">
       <classpath>
         <pathelement location="${opencv.jar}"></pathelement>
+        <pathelement location="${commons-cli-1.4.jar}"></pathelement>
       </classpath>
     </javac>
   </target>
 
-  <target name="build" depends="compile" description="generate the distribution">
-    <!-- Put everything in ${build.dir} into the MyProject-${DSTAMP}.jar file -->
+  <target name="build" depends="compile">
     <mkdir dir="${lib.dir}"/>
   	<mkdir dir="${bin.dir}"/>
     <copy file="${opencv.jar}" todir="${lib.dir}"></copy>
+    <copy file="${commons-cli-1.4.jar}" todir="${lib.dir}"></copy>
     <jar destfile="${bin.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
       <manifest>
         <attribute name="Main-Class" value="${main-class}"/>
@@ -38,9 +39,16 @@
     </jar>
   </target>
 
+  <target name="clean">
+    <delete dir="${build.dir}"></delete>
+    <delete dir="${bin.dir}"></delete>
+  </target>
+
+  <target name="rebuild" depends="clean, build"></target>
+
   <target name="run" depends="build">
-  	<!-- When using the jar attribute, all classpath settings are ignored according to Oracle's specification.-->
   	<java fork="true" classname="${main-class}">
+      <arg line="${args}"></arg>
   	  <sysproperty key="java.library.path" path="${bin.dir}"></sysproperty>
   	  <classpath>
   	  	<pathelement location="${bin.dir}/${ant.project.name}.jar"></pathelement>
@@ -51,10 +59,24 @@
   	</java>
   </target>
 
-  <target name="clean" description="clean up">
-    <delete dir="${build.dir}"/>
+  <target name="test" depends="build">
+    <javac srcdir="${src.dir}" destdir="${classes.dir}" includes="test/**">
+      <classpath>
+        <pathelement location="${bin.dir}/${ant.project.name}.jar"></pathelement>
+        <fileset dir="${lib.dir}">
+          <include name="**/*.jar"></include>
+        </fileset>
+      </classpath>
+    </javac>
+    <junit printsummary="true" showoutput="true">
+      <test name="${test-class}"></test>
+      <classpath>
+        <pathelement location="${bin.dir}/${ant.project.name}.jar"></pathelement>
+        <fileset dir="${lib.dir}">
+          <include name="**/*.jar"></include>
+        </fileset>
+      </classpath>
+    </junit>
   </target>
-
-  <target name="rebuild" depends="clean, build"/>
 
 </project>
