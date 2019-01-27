@@ -20,6 +20,7 @@ public class CameraSingleton {
 	private CameraSingleton() {	
 		this.videoCapture = new VideoCapture();
 		this.videoWriter = new VideoWriter();
+		this.setImage(new Mat());
 		this.executorService = null;
 		this.fps = 10;
 	}
@@ -40,7 +41,7 @@ public class CameraSingleton {
 			Mat oneFrame = new Mat();
 			this.videoCapture.read(oneFrame);
 			videoWriter.write(oneFrame);
-			// System.out.println("Recording!");
+			this.setImage(oneFrame);
 		}, 0, 1000 / this.fps, TimeUnit.MILLISECONDS);
 	}
 	
@@ -66,14 +67,23 @@ public class CameraSingleton {
 	}
 	
 	public void setFps(int fps) {
-		fps = Math.min(fps, 1);
-		fps = Math.max(fps, 20);
+		fps = Math.max(fps, 1);
+		fps = Math.min(fps, 20);
 		this.fps = fps;
 	}
 	
+	public Mat getImage() {
+		return image;
+	}
+
+	private void setImage(Mat image) {
+		this.image = image;
+	}
+
 	private static CameraSingleton cameraSingleton = null;
 	private VideoCapture videoCapture;
 	private VideoWriter videoWriter;
-	private ScheduledExecutorService executorService = null; 
+	private Mat image;
+	private ScheduledExecutorService executorService;
 	private int fps;
 };

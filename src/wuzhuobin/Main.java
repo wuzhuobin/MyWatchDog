@@ -26,9 +26,10 @@ public class Main {
 
 	public static void main(String[] args) throws InterruptedException {
 
-		Option optionFps = new Option("f", "framePerSecond", true, "Seting the fps of the camera");
-		Option optionLengthOfFile = new Option("l", "lengthOfFile", true, "Seting the length of the video file");
-		Option optionOutput = new Option("o", "output", true, "Seting the output directory");
+		Option optionFps = new Option("f", "framePerSecond", true, "Seting the fps of the camera.");
+		Option optionLengthOfFile = new Option("l", "lengthOfFile", true, "Seting the length of the video file in seconds.");
+		Option optionOutput = new Option("o", "output", true, "Seting the output directory.");
+		optionOutput.setRequired(true);
 		
 		Options options = new Options();
 		options.addOption(optionFps);
@@ -46,7 +47,7 @@ public class Main {
 			facade(fps, lengthOfFile, output);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
-			System.err.println(e.getMessage());
+			e.printStackTrace();
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("OpenCvJavaSample", options);
 		}
@@ -69,7 +70,7 @@ public class Main {
 			}
 			cameraSingleton.start(output + "/" + fileName);
 			}
-		}, 0, lengthOfFile);
+		}, 0, lengthOfFile * 1000);
 		
 		Scanner scanner = new Scanner(System.in);
 		System.out.println("waiting input.");
