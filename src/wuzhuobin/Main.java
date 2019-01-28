@@ -16,8 +16,9 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.opencv.core.Core;
 
-
+import wuzhuobin.camera.CameraRecorder;
 import wuzhuobin.camera.CameraSingleton;
+import wuzhuobin.camera.CameraSingleton2;
 
 public class Main {
 	static {
@@ -53,8 +54,45 @@ public class Main {
 		}
 		
 	}
-
+	
 	private static void facade(int fps, int lengthOfFile, String output) {
+		CameraSingleton2 camera = CameraSingleton2.getInstance();
+		camera.open();
+		CameraRecorder recorder = new CameraRecorder();
+		Timer timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMMyyyydd_hhmmss");
+				String fileName = "record" + simpleDateFormat.format(new Date()) + ".avi";
+				System.err.println(fileName);
+				if (recorder.isOpened()) {
+					recorder.release();
+				}
+				recorder.open(output + "/" + fileName, fps);
+				
+			}
+		}, 10, lengthOfFile * 1000);
+		Scanner scanner = new Scanner(System.in);
+		System.out.println("waiting input.");
+		while (scanner.hasNext()) {
+			String input = scanner.next();
+			if (input.charAt(0) == 'q' && input.length() == 1) {
+				timer.cancel();
+				timer.purge();
+				recorder.release();
+				camera.release();
+				scanner.close();
+				break;
+			}
+			System.out.println("input 'q' to exit. ");
+			System.out.println("waiting input.");
+		}
+	}
+
+	private static void facade1(int fps, int lengthOfFile, String output) {
 		Timer timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
 			
