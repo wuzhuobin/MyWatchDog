@@ -8,6 +8,7 @@ import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.VideoWriter;
 
+@Deprecated
 public class CameraSingleton {
 	
 	public static CameraSingleton getInstance() {
