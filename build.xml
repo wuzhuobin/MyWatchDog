@@ -32,7 +32,7 @@
   	<mkdir dir="${bin.dir}"/>
     <copy file="${opencv.jar}" todir="${lib.dir}"></copy>
     <copy file="${commons-cli-1.4.jar}" todir="${lib.dir}"></copy>
-    <jar destfile="${bin.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+    <jar basedir="${classes.dir}" destfile="${bin.dir}/${ant.project.name}.jar" excludes="test/**">
       <manifest>
         <attribute name="Main-Class" value="${main-class}"/>
       </manifest>
@@ -59,7 +59,7 @@
   	</java>
   </target>
 
-  <target name="test" depends="build">
+  <target name="compile-test" depends="build">
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includes="test/**">
       <classpath>
         <pathelement location="${bin.dir}/${ant.project.name}.jar"></pathelement>
@@ -68,8 +68,20 @@
         </fileset>
       </classpath>
     </javac>
+  </target>
+
+  <target name="build-test" depends="compile-test">
+    <jar basedir="${classes.dir}" destfile="${lib.dir}/test_${ant.project.name}.jar" includes="test/**"></jar>
+  </target>
+
+  <target name="test" depends="build-test">
     <junit printsummary="true" showoutput="true">
-      <test name="${test-class}"></test>
+      <test name="${test-class}" fork="true"></test>
+      <batchtest fork="yes">
+        <fileset dir="${src.dir}">
+          <include name="test/**"></include>
+        </fileset>
+      </batchtest>
       <classpath>
         <pathelement location="${bin.dir}/${ant.project.name}.jar"></pathelement>
         <fileset dir="${lib.dir}">
