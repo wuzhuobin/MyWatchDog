@@ -69,7 +69,7 @@ public class Main {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMMyyyydd_hhmmss");
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMMyyyydd_HHmmss");
 				String fileName = "record" + simpleDateFormat.format(new Date()) + ".avi";
 				System.err.println(fileName);
 				if (recorder.isOpened()) {
